@@ -15,7 +15,7 @@ var upgrades: Array[Button] = []
 var shop: Array[Button] = []
 var dialog: ColorRect
 var dialog_box: VBoxContainer
-var selection_preview: AnimatedSprite2D
+var selection_preview: PenguinVisual
 
 func setup(controller: Node2D) -> void:
 	game = controller
@@ -52,9 +52,7 @@ func setup(controller: Node2D) -> void:
 	for i in range(6):
 		var type := i
 		var b := button(sidebar, Vector2(14, 65+i*96), Vector2(222, 87), "%s\n$ %d" % [TowerData.CLASSES[i].name, TowerData.CLASSES[i].cost], func(): game.choose(type))
-		var texture := AtlasTexture.new()
-		texture.atlas = load("res://assets/sprites/penguins.png")
-		texture.region = Rect2(0, i*256, 128, 128)
+		var texture := SpriteLibrary.part(i, 0)
 		b.icon = texture
 		b.expand_icon = true
 		b.add_theme_constant_override("icon_max_width", 66)
@@ -65,7 +63,7 @@ func setup(controller: Node2D) -> void:
 	coins.modulate = Color("594d38")
 	var bottom := panel(Vector2(0, 722), Vector2(1190, 178), Color("203a49"))
 	bottom.theme = theme
-	selection_preview = AnimatedSprite2D.new()
+	selection_preview = PenguinVisual.new()
 	selection_preview.position = Vector2(73, 85)
 	bottom.add_child(selection_preview)
 	selection = label(bottom, Vector2(145, 16), Vector2(315, 100), "", 17)
@@ -204,10 +202,13 @@ func update_selection() -> void:
 			b.disabled = true
 			b.text = "Selecione um pinguim"
 		return
-	var frames := SpriteLibrary.frames_for(tower.tower_type)
-	if selection_preview.sprite_frames != frames:
-		selection_preview.sprite_frames = frames
-		selection_preview.play("idle")
+	if selection_preview.tower_type != tower.tower_type:
+		var parent := selection_preview.get_parent()
+		selection_preview.queue_free()
+		selection_preview = PenguinVisual.new()
+		selection_preview.tower_type = tower.tower_type
+		selection_preview.position = Vector2(73, 85)
+		parent.add_child(selection_preview)
 	selection.text = "%s · %d derrotadas\nDano: %.0f  |  Alcance: %.0f\nCadência base: %.2fs" % [TowerData.CLASSES[tower.tower_type].name, tower.kills, tower.attack_damage(), tower.attack_range(), TowerData.CLASSES[tower.tower_type].cooldown / (1.0 + tower.upgrades[1] * 0.3)]
 	sell_button.text = "Vender · $ %d" % int(tower.invested * 0.7)
 	var names := ["Impacto", "Cadência", "Alcance"]

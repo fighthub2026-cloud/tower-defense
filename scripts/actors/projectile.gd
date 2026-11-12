@@ -8,10 +8,22 @@ var damage := 18.0
 var lifetime := 3.0
 var clock := 0.0
 var trap := false
+var heading := Vector2.UP
+var art: Sprite2D
+
+func _ready() -> void:
+	art = Sprite2D.new()
+	art.texture = SpriteLibrary.part(tower_type, 2)
+	art.scale = SpriteLibrary.projectile_scale(tower_type)
+	add_child(art)
+	if not trap:
+		rotation = heading.angle() + PI / 2.0
 
 func _physics_process(delta: float) -> void:
 	lifetime -= delta
 	clock += delta
+	if tower_type == 1 and is_instance_valid(art):
+		art.rotation += delta * 20.0
 	if lifetime <= 0.0:
 		queue_free()
 		return
@@ -28,12 +40,16 @@ func _physics_process(delta: float) -> void:
 			impact()
 			queue_free()
 		else:
-			position = position.move_toward(target.position, speed * delta)
+			heading = position.direction_to(target.position)
+			rotation = heading.angle() + PI / 2.0
+			position += heading * speed * delta
 	else:
 		queue_free()
 	queue_redraw()
 
 func apply_damage(enemy: Slime) -> void:
+	if tower_type == 3:
+		enemy.stick_snow(2.5)
 	var killed := enemy.hit(damage, 2.5 if tower_type == 3 else 0.0, tower_type in [2, 5])
 	if killed and is_instance_valid(source):
 		source.kills += 1
@@ -41,7 +57,7 @@ func apply_damage(enemy: Slime) -> void:
 func impact() -> void:
 	var point := target.position
 	apply_damage(target)
-	if tower_type in [2, 3]:
+	if tower_type == 2:
 		for enemy in get_tree().get_nodes_in_group("slimes"):
 			if enemy != target and enemy.alive and point.distance_to(enemy.position) < 60.0:
 				apply_damage(enemy)
@@ -52,21 +68,6 @@ func impact() -> void:
 	get_parent().add_child(ring)
 
 func _draw() -> void:
-	var color: Color = TowerData.CLASSES[tower_type].color
-	if trap:
-		draw_rect(Rect2(-17, -7, 34, 14), Color("4f6677"))
+	if tower_type == 5 and not trap:
 		for i in range(3):
-			var x := -12 + i * 10
-			draw_colored_polygon(PackedVector2Array([Vector2(x, 5), Vector2(x+4, -12), Vector2(x+8, 5)]), Color("c1e2eb"))
-	elif tower_type == 1:
-		draw_set_transform(Vector2.ZERO, clock * 17.0)
-		var points := PackedVector2Array()
-		for i in range(8):
-			points.append(Vector2.from_angle(i * PI / 4.0) * (11.0 if i % 2 == 0 else 3.0))
-		draw_colored_polygon(points, Color("7795a8"))
-		points.append(points[0])
-		draw_polyline(points, Color("eafaff"), 1.5, true)
-	else:
-		draw_circle(Vector2.ZERO, 8.0, Color("263c50") if tower_type == 2 else color)
-		draw_arc(Vector2.ZERO, 8.0, 0, TAU, 20, Color.WHITE, 1.5, true)
-		draw_circle(Vector2(-2, -2), 2.5, Color(1, 1, 1, 0.8))
+			draw_circle(Vector2(0, 5 + i * 5), 4.0 - i, Color(0.7, 0.3, 1.0, 0.2 - i * 0.05))

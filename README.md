@@ -17,24 +17,29 @@ Não usa Node, npm, localhost ou navegador. O jogo roda em janela própria. Para
 project.godot                 Configuração do projeto
 assets/
   icon.svg                    Ícone original
-  sprites/penguins.png        Atlas original: seis classes, repouso e ataque
+  sprites/penguin_layers.png  Atlas aprovado: corpos, asas/armas e projéteis
 scenes/
   main.tscn                   Cena principal, mundo e HUD
   actors/                     Cenas reutilizáveis de pinguim e gosma
   ui/                         Cena do HUD
 scripts/
-  core/                       Partida, mapa, dados e cache de SpriteFrames
+  core/                       Partida, mapa, dados e cache de texturas
   actors/                     Pinguins, gosmas, projéteis e impactos
   systems/                    Ondas e geração de inimigos
+  visuals/                    Montagem em camadas e animações
   ui/                         Construção da interface e menus
- tests/                       Testes executáveis pelo Godot headless
- docs/                        Notas técnicas
+tests/                       Testes executáveis pelo Godot headless
+docs/                        Notas técnicas
 ```
 
 ## Implementado nesta base
 
 - Mapa limpo com caminho curvo de gelo e interface fora da área de jogo.
-- Seis classes com `AnimatedSprite2D`: 24 quadros de repouso e 24 de ataque por classe. O projétil é criado no quadro 9, após a preparação.
+- Seis classes com a arte aérea aprovada, montada em `Sprite2D` por camadas. `AnimationPlayer` interpola preparação, soltura, recuperação e recarga. As asas ficam atrás da cabeça, com ombro fixo na lateral.
+- Flecha da besta, estrela ninja e bola de neve usam a mesma textura na arma/mão e no voo; somem na soltura (0,30 s) e reaparecem na recarga (0,70 s). Os tempos são acelerados proporcionalmente pelas melhorias de cadência.
+- Pinguins giram em 360° para mirar. O projétil nasce na posição do objeto carregado, compensando a posição lateral da arma.
+- A ponta da varinha carrega o brilho, solta a esfera e recupera a energia.
+- A bola de neve gruda na gosma e mantém pedaços visíveis enquanto a lentidão durar.
 - Compra e posicionamento válido, seleção, alcance, venda com reembolso de 70%.
 - Três caminhos de melhoria funcional por torre: dano, cadência e alcance. Apenas um pode atingir nível 3; com um no máximo, os demais ficam limitados ao nível 1. Para liberar o nível 3, os outros caminhos precisam estar no nível 0 ou 1.
 - Canhão com área de impacto; gelo com desaceleração; engenheiro com armadilhas consumíveis persistentes na pista; magia e canhão ignoram a redução de dano da armadura.
@@ -49,7 +54,7 @@ Mouse: comprar, posicionar e selecionar. **Espaço** inicia a próxima onda. **E
 
 ## Escopo
 
-É a primeira base jogável em Godot. A arte foi importada do desenho procedural original e ainda será refinada; não representa o acabamento final das referências. As 60 ondas são geradas por fórmula e ainda precisam de balanceamento de campanha. Ainda não inclui áudio, agentes especiais, coleção, novas classes, opções de configuração ou efeitos exclusivos de cada ramo de upgrade. A exportação executável final não faz parte desta etapa.
+É a primeira base jogável em Godot. A arte aérea aprovada foi separada em camadas e ainda pode ser refinada; não representa o acabamento final das referências. As 60 ondas são geradas por fórmula e ainda precisam de balanceamento de campanha. Ainda não inclui áudio, agentes especiais, coleção, novas classes, opções de configuração ou efeitos exclusivos de cada ramo de upgrade. A exportação executável final não faz parte desta etapa.
 
 ## Testes
 
@@ -57,5 +62,9 @@ Na pasta do projeto, com Godot no PATH:
 
 ```
 godot --headless --editor --path . --import
-godot --headless --path . --script tests/smoke_test.gd
+godot --headless --path . --scripttests/smoke_test.gd
 ```
+
+## Conferir as animações
+
+No editor, abra `scenes/animation_gallery.tscn` e pressione **F6** para ver os seis pinguins atacando alvos. **F5** continua abrindo a partida normal. O teste de animação verifica origem, direção, soltura única, objeto visível/invisível, recarga, camadas das asas e neve aderente.

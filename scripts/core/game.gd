@@ -12,7 +12,7 @@ var started := false
 var ended := false
 var rewarded := false
 var save_path := "user://progress.cfg"
-var ghost: AnimatedSprite2D
+var ghost: PenguinVisual
 @onready var world: Node2D = $World
 @onready var map: FrozenMap = $World/FrozenMap
 @onready var hud: CanvasLayer = $HUD
@@ -24,8 +24,7 @@ func _ready() -> void:
 	add_child(waves)
 	waves.completed.connect(_on_wave_completed)
 	waves.changed.connect(refresh)
-	ghost = AnimatedSprite2D.new()
-	ghost.modulate.a = 0.5
+	ghost = PenguinVisual.new()
 	ghost.visible = false
 	world.add_child(ghost)
 	var save := ConfigFile.new()
@@ -47,9 +46,10 @@ func choose(type: int) -> void:
 		return
 	chosen = type
 	map.selected = null
-	ghost.sprite_frames = SpriteLibrary.frames_for(type)
-	ghost.play("idle")
-	ghost.scale = Vector2(0.9, 0.9)
+	ghost.queue_free()
+	ghost = PenguinVisual.new()
+	ghost.tower_type = type
+	world.add_child(ghost)
 	ghost.visible = true
 	hud.message.text = "Escolha uma área livre na neve. Esc cancela."
 	refresh()

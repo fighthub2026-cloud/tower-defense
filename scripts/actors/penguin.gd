@@ -9,15 +9,17 @@ var released := false
 var kills := 0
 var invested := 0
 var upgrades: Array[int] = [0, 0, 0]
-@onready var sprite: AnimatedSprite2D = $Sprite
+var visual: PenguinVisual
+var aim_angle := 0.0
 
 func _ready() -> void:
 	add_to_group("penguins")
 	invested = TowerData.CLASSES[tower_type].cost
-	sprite.sprite_frames = SpriteLibrary.frames_for(tower_type)
-	sprite.play("idle")
-	sprite.frame_changed.connect(_on_frame_changed)
-	sprite.animation_finished.connect(_on_animation_finished)
+	visual = PenguinVisual.new()
+	visual.tower_type = tower_type
+	add_child(visual)
+	visual.released.connect(_on_release)
+	visual.finished.connect(_on_animation_finished)
 
 func attack_range() -> float:
 	return TowerData.CLASSES[tower_type].range * (1.0 + upgrades[2] * 0.22)
@@ -42,7 +44,11 @@ func can_upgrade(path: int) -> bool:
 
 func _physics_process(delta: float) -> void:
 	cooldown = maxf(0.0, cooldown - delta)
-	if attacking or cooldown > 0.0:
+	if attacking:
+		if not released:
+			aim_at_target()
+		return
+	if cooldown > 0.0:
 		return
 	var best: Slime = null
 	for enemy in get_tree().get_nodes_in_group("slimes"):
@@ -52,14 +58,17 @@ func _physics_process(delta: float) -> void:
 	if best == null:
 		return
 	target = best
-	sprite.flip_h = target.position.x < position.x
+	# A arte aponta para cima; a torre gira inteira em qualquer direção.
+	aim_angle = (target.global_position - global_position).angle() + PI / 2.0
+	rotation = aim_angle
 	attacking = true
 	released = false
 	cooldown = TowerData.CLASSES[tower_type].cooldown / (1.0 + upgrades[1] * 0.3)
-	sprite.play("attack")
+	visual.player.speed_scale = maxf(1.0, PenguinVisual.ATTACK_DURATION / cooldown)
+	visual.play_attack()
 
-func _on_frame_changed() -> void:
-	if sprite.animation != &"attack" or sprite.frame < 9 or released:
+func _on_release() -> void:
+	if released:
 		return
 	released = true
 	if not is_instance_valid(target) or not target.alive:
@@ -74,10 +83,21 @@ func _on_frame_changed() -> void:
 		shot.position = target.route.sample_baked(target.distance + 20.0)
 		shot.lifetime = 8.0
 	else:
-		shot.position = position + Vector2(-22 if sprite.flip_h else 22, 8)
+		# A mesma textura sai da posição exata do objeto na asa/arma.
+		aim_at_target()
+		shot.position = get_parent().to_local(visual.launch_position())
+		shot.rotation = visual.launch_rotation()
+		shot.heading = Vector2.UP.rotated(shot.rotation)
 	get_parent().add_child(shot)
 
 func _on_animation_finished() -> void:
-	if sprite.animation == &"attack":
-		attacking = false
-		sprite.play("idle")
+	attacking = false
+
+func aim_at_target() -> void:
+	if not is_instance_valid(target) or not target.alive:
+		return
+	# Compensa a arma lateral e a preparação da asa para apontar ao alvo.
+	for i in range(3):
+		var direction := (target.global_position - visual.launch_position()).angle()
+		var current := visual.launch_rotation() - PI / 2.0
+		rotation += angle_difference(current, direction)

@@ -24,7 +24,7 @@ func run() -> void:
 	var tower: Penguin = game.map.selected
 	check(is_instance_valid(tower) and game.money == 830, "Compra e seleção de torre")
 	check(not game.map.valid_spot(Vector2(180, 160)), "Sobreposição bloqueada")
-	check(tower.sprite.sprite_frames.get_frame_count("attack") == 24, "24 quadros de ataque")
+	check(tower.visual.player.has_animation("attack"), "Animação de ataque em camadas")
 	var original_damage := tower.attack_damage()
 	game.buy_upgrade(0)
 	check(tower.attack_damage() > original_damage, "Melhoria modifica dano")

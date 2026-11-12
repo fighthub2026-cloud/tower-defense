@@ -13,6 +13,7 @@ var slowed := 0.0
 var flash := 0.0
 var clock := 0.0
 var alive := true
+var snow_patches: Array[float] = []
 
 func _ready() -> void:
 	add_to_group("slimes")
@@ -22,6 +23,10 @@ func _physics_process(delta: float) -> void:
 	if not alive:
 		return
 	clock += delta
+	for i in range(snow_patches.size() - 1, -1, -1):
+		snow_patches[i] -= delta
+		if snow_patches[i] <= 0.0:
+			snow_patches.remove_at(i)
 	slowed = maxf(0.0, slowed - delta)
 	flash = maxf(0.0, flash - delta)
 	distance += speed * delta * (0.4 if slowed > 0.0 else 1.0)
@@ -69,6 +74,19 @@ func _draw() -> void:
 	if kind == 3:
 		for x in [-12, 0, 12]:
 			draw_colored_polygon(PackedVector2Array([Vector2(x-4, -12), Vector2(x, -23), Vector2(x+4, -12)]), Color("c1d5df"))
+	# Os pedaços acompanham o corpo; não ficam parados no chão.
+	var snow_texture := SpriteLibrary.part(3, 2)
+	var offsets := [Vector2(-12, -6), Vector2(8, -12), Vector2(12, 5)]
+	for i in range(snow_patches.size()):
+		var alpha := minf(1.0, snow_patches[i] / 0.3)
+		draw_texture_rect(snow_texture, Rect2(offsets[i] - Vector2(7, 7), Vector2(14, 14)), false, Color(1, 1, 1, alpha))
 	if health < max_health:
 		draw_rect(Rect2(-20, -31, 40, 4), Color("507182"))
 		draw_rect(Rect2(-20, -31, 40 * maxf(health, 0.0) / max_health, 4), Color("77d7a2"))
+
+func stick_snow(duration: float) -> void:
+	slowed = maxf(slowed, duration)
+	if snow_patches.size() >= 3:
+		snow_patches.pop_front()
+	snow_patches.append(duration)
+	queue_redraw()
