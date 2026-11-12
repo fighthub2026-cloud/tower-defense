@@ -37,7 +37,7 @@ func run() -> void:
 	await process_frame
 	check(game.money == original_money + refund, "Venda devolve 70% do investimento")
 	check(get_nodes_in_group("penguins").is_empty(), "Torre removida após venda")
-	# Todos os tipos devem reproduzir ataque, soltar projétil e eliminar alvo.
+	# Ataques ofensivos eliminam; o congelador só desacelera.
 	Engine.time_scale = 6.0
 	for type in range(6):
 		var actor: Penguin = load("res://scenes/actors/penguin.tscn").instantiate()
@@ -52,10 +52,13 @@ func run() -> void:
 		enemy.speed = 25.0
 		game.world.add_child(enemy)
 		var frames := 0
-		while is_instance_valid(enemy) and frames < 150:
+		while is_instance_valid(enemy) and frames < 150 and (type != 3 or enemy.slowed <= 0.0):
 			await physics_frame
 			frames += 1
-		check(actor.kills > 0, "Ataque funcional da classe %d" % type)
+		if type == 3:
+			check(is_instance_valid(enemy) and enemy.health == 5.0 and enemy.slowed > 0.0 and actor.kills == 0, "Congelador desacelera sem causar dano")
+		else:
+			check(actor.kills > 0, "Ataque funcional da classe %d" % type)
 		actor.queue_free()
 		if is_instance_valid(enemy):
 			enemy.queue_free()

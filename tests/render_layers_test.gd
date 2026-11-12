@@ -14,7 +14,7 @@ func run() -> void:
 	root.add_child(game)
 	await process_frame
 	game.begin(0)
-	root.size = Vector2i(1440, 900)
+	root.size = Vector2i(1440, 810)
 	var positions := [Vector2(200, 150), Vector2(530, 220), Vector2(900, 160), Vector2(170, 435), Vector2(510, 465), Vector2(900, 430)]
 	var rotations := [PI, PI / 2.0, 0.0, -PI / 2.0, PI / 4.0, -PI / 4.0]
 	var towers: Array[Penguin] = []

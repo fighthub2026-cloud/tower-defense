@@ -39,19 +39,18 @@ func spawn() -> void:
 	var enemy := SLIME_SCENE.instantiate() as Slime
 	enemy.route = route
 	var properties: Dictionary = TowerData.DIFFICULTIES[difficulty]
-	enemy.kind = 0 if wave < 3 else randi_range(0, 1)
-	if wave >= 7:
-		enemy.kind = randi_range(0, 2)
-	if wave >= 12:
-		enemy.kind = randi_range(0, 3)
-	enemy.max_health = (35.0 + wave * 7.0) * properties.health * (1.8 if enemy.kind == 3 else 1.0)
-	enemy.health = enemy.max_health
-	enemy.speed = (40.0 + minf(wave * 0.6, 35.0)) * properties.speed * (1.3 if enemy.kind == 1 else 1.0)
+	var last_kind := 0
+	for threshold in [3, 7, 12, 18, 24, 30]:
+		if wave >= threshold:
+			last_kind += 1
+	enemy.kind = randi_range(0, last_kind)
 	if wave % 10 == 0 and remaining == 1:
-		enemy.scale = Vector2(1.65, 1.65)
-		enemy.health *= 7.0
-		enemy.max_health = enemy.health
-		enemy.speed *= 0.65
+		enemy.kind = 7
+		enemy.scale = Vector2(1.6, 1.6)
+	var breed: Dictionary = TowerData.ENEMIES[enemy.kind]
+	enemy.max_health = (35.0 + wave * 7.0) * properties.health * breed.hp
+	enemy.health = enemy.max_health
+	enemy.speed = (40.0 + minf(wave * 0.6, 35.0)) * properties.speed * breed.speed
 	world.add_child(enemy)
 	enemy.defeated.connect(func(s: Slime): world.get_parent().enemy_defeated(s))
 	enemy.escaped.connect(func(s: Slime): world.get_parent().enemy_escaped(s))

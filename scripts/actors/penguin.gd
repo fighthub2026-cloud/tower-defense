@@ -25,7 +25,10 @@ func attack_range() -> float:
 	return TowerData.CLASSES[tower_type].range * (1.0 + upgrades[2] * 0.22)
 
 func attack_damage() -> float:
-	return TowerData.CLASSES[tower_type].damage * (1.0 + upgrades[0] * 0.55)
+	return 0.0 if tower_type == 3 else TowerData.CLASSES[tower_type].damage * (1.0 + upgrades[0] * 0.55)
+
+func slow_duration() -> float:
+	return 2.5 + upgrades[0] * 1.25
 
 func upgrade_cost(path: int) -> int:
 	return int(TowerData.CLASSES[tower_type].cost * (0.5 + upgrades[path] * 0.7))
@@ -78,6 +81,7 @@ func _on_release() -> void:
 	shot.target = target
 	shot.source = self
 	shot.damage = attack_damage()
+	shot.slow_duration = slow_duration()
 	if tower_type == 4:
 		shot.trap = true
 		shot.position = target.route.sample_baked(target.distance + 20.0)
@@ -86,8 +90,8 @@ func _on_release() -> void:
 		# A mesma textura sai da posição exata do objeto na asa/arma.
 		aim_at_target()
 		shot.position = get_parent().to_local(visual.launch_position())
-		shot.rotation = visual.launch_rotation()
-		shot.heading = Vector2.UP.rotated(shot.rotation)
+		shot.heading = (target.global_position - visual.launch_position()).normalized()
+		shot.rotation = shot.heading.angle() + PI / 2.0
 	get_parent().add_child(shot)
 
 func _on_animation_finished() -> void:
@@ -95,6 +99,9 @@ func _on_animation_finished() -> void:
 
 func aim_at_target() -> void:
 	if not is_instance_valid(target) or not target.alive:
+		return
+	if tower_type in [1, 3]:
+		rotation = (target.global_position - global_position).angle() + PI / 2.0
 		return
 	# Compensa a arma lateral e a preparação da asa para apontar ao alvo.
 	for i in range(3):

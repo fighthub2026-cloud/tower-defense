@@ -15,3 +15,13 @@ Sem dependências externas em tempo de execução. O projeto utiliza Godot Stand
 ## Ordem de desenho
 
 O cenário usa profundidade 0, a asa/arma usa 1, a cabeça usa 2 e os projéteis usam 3. A asa não pode usar profundidade negativa: isso a coloca atrás de todo o mapa, não apenas da cabeça. O teste `render_layers_test.gd` verifica a presença real de pixels das asas/armas no renderizador, incluindo personagens girados.
+
+## HUD, seleção e efeitos de controle
+
+Os recortes de interface são imagens procedurais feitas em Canvas 2D e aplicadas como `StyleBoxTexture` e `AtlasTexture` no Godot. O HUD não usa uma barra superior: os indicadores são controles independentes sobre o mapa. A loja só contém as seis torres implementadas.
+
+O botão principal da loja tem três estados: `next`, `active` e `cancel`. A construção tem prioridade de interação sobre a onda ativa; cancelar não compra, não inicia uma onda e não altera a simulação. O painel de melhorias só abre para torres colocadas. O mundo muda de escala uniformemente nesse estado, mantendo as torres fora da área do painel. A posição do mouse é convertida pelas transformações do mundo.
+
+O congelador segue uma rota de controle exclusiva: seu projétil chama `stick_snow` e retorna sem chamar `hit`. Isso garante zero dano mesmo com metadados incorretos de projétil. A melhoria de impacto é substituída por duração da lentidão na interface e nas regras.
+
+O atlas de gosmas tem oito linhas de tipos e doze quadros por tipo. Os dados de cada classe ficam em `TowerData.ENEMIES`; as ondas liberam os tipos progressivamente. Divisão em fragmentos, armadura, regeneração e resistência ao gelo têm regras próprias e testes de integração.

@@ -41,9 +41,9 @@ docs/                        Notas técnicas
 - A ponta da varinha carrega o brilho, solta a esfera e recupera a energia.
 - A bola de neve gruda na gosma e mantém pedaços visíveis enquanto a lentidão durar.
 - Compra e posicionamento válido, seleção, alcance, venda com reembolso de 70%.
-- Três caminhos de melhoria funcional por torre: dano, cadência e alcance. Apenas um pode atingir nível 3; com um no máximo, os demais ficam limitados ao nível 1. Para liberar o nível 3, os outros caminhos precisam estar no nível 0 ou 1.
-- Canhão com área de impacto; gelo com desaceleração; engenheiro com armadilhas consumíveis persistentes na pista; magia e canhão ignoram a redução de dano da armadura.
-- Quatro tipos de gosma: azul, verde rápida, roxa e cinza blindada. Nesta etapa a roxa tem variação visual, ainda sem divisão.
+- Três caminhos de melhoria funcional por torre: dano (duração da lentidão no congelador), cadência e alcance. Apenas um pode atingir nível 3; com um no máximo, os demais ficam limitados ao nível 1. Para liberar o nível 3, os outros caminhos precisam estar no nível 0 ou 1.
+- Canhão com área de impacto; gelo com desaceleração e **zero dano**, inclusive com melhorias; engenheiro com armadilhas consumíveis persistentes na pista; magia e canhão ignoram a redução de dano da armadura.
+- Oito classes de gosma com atlas animado desenhado em Canvas 2D: comum, saltadora, divisora (gera dois fragmentos), blindada, polar (resiste à lentidão), regeneradora, dourada e Rei das Gosmas.
 - Gerador de 60 ondas, três dificuldades, chefões a cada dez ondas, vitória e continuação infinita.
 - Recompensa de vitória em Moedas de Gelo, salva em `user://progress.cfg` e mantida no infinito.
 - Pausa, velocidade 2×, reinício, vitória e derrota.
@@ -72,3 +72,15 @@ No editor, abra `scenes/animation_gallery.tscn` e pressione **F6** para ver os s
 ### Verificação visual de camadas
 
 Com uma tela gráfica disponível, execute `godot --path . --script tests/render_layers_test.gd` **sem `--headless`**. O teste renderiza os seis pinguins em direções diferentes sobre o mapa e compara os pixels com e sem asas, detectando armas escondidas atrás da neve. `GODOT_TEST_SCREENSHOT` pode definir um caminho para salvar a captura.
+
+## Interface e arte procedural
+
+O HUD segue a proposta aprovada: vida/dinheiro flutuantes sobre a neve, onda e engrenagem no canto e loja estreita de madeira com duas colunas. Usa os **seis pinguins existentes**, sem substituir os personagens pelas ilustrações do mockup. O painel de melhorias aparece apenas ao selecionar uma torre colocada; o tabuleiro se ajusta para manter a área de jogo visível.
+
+Ao escolher um pinguim na loja, o botão de iniciar/acompanhar a onda vira um **X vermelho para cancelar**. Ao cancelar ou construir, o botão recupera o estado anterior da onda. A prévia de construção mostra o alcance e a validade da posição. **Esc** também cancela.
+
+`tools/art/index.html` e `tools/art/generate.js` são as fontes de criação em **Canvas 2D** dos ícones, cartões, botões, madeira, neve, árvores, cristais e do atlas de gosmas. Abra a ferramenta no navegador para baixar cada PNG. O jogo utiliza apenas os PNG locais; essa ferramenta não é necessária para jogar.
+
+O congelador não altera a vida nem produz flashes de dano. O primeiro caminho aumenta a duração da lentidão. As marcas de neve são pequenas placas nas bordas da gosma e derretem ao expirar o efeito. A flecha carregada e o projétil em voo têm o mesmo tamanho, aumentado para ficar legível.
+
+Novos testes: `godot --headless --path . --script tests/mechanics_ui_test.gd`. A cena `scenes/enemy_gallery.tscn` (F6) apresenta os oito tipos de gosma. `tests/capture_preview.gd` permite capturar o HUD real com `GODOT_CAPTURE_DIR` apontando para uma pasta existente, usando renderização gráfica.

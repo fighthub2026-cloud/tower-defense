@@ -5,6 +5,7 @@ var target: Slime
 var source: Node2D
 var tower_type := 0
 var damage := 18.0
+var slow_duration := 2.5
 var lifetime := 3.0
 var clock := 0.0
 var trap := false
@@ -50,8 +51,9 @@ func _physics_process(delta: float) -> void:
 
 func apply_damage(enemy: Slime) -> void:
 	if tower_type == 3:
-		enemy.stick_snow(2.5)
-	var killed := enemy.hit(damage, 2.5 if tower_type == 3 else 0.0, tower_type in [2, 5])
+		enemy.stick_snow(slow_duration)
+		return
+	var killed := enemy.hit(damage, 0.0, tower_type in [2, 5])
 	if killed and is_instance_valid(source):
 		source.kills += 1
 
@@ -65,7 +67,8 @@ func impact() -> void:
 	var ring := Impact.new()
 	ring.position = point
 	ring.color = TowerData.CLASSES[tower_type].color
-	ring.radius = 65.0 if tower_type == 2 else 26.0
+	ring.radius = 65.0 if tower_type == 2 else (13.0 if tower_type == 3 else 26.0)
+	ring.frost = tower_type == 3
 	get_parent().add_child(ring)
 
 func _draw() -> void:

@@ -51,17 +51,28 @@ func choose(type: int) -> void:
 	ghost.tower_type = type
 	world.add_child(ghost)
 	ghost.visible = true
+	map.queue_redraw()
 	hud.message.text = "Escolha uma área livre na neve. Esc cancela."
 	refresh()
 
+func _draw() -> void:
+	draw_texture_rect(map.snow_art, Rect2(0, 0, 1248, 810), true)
+
 func _process(_delta: float) -> void:
+	# A área da partida encolhe uniformemente ao abrir melhorias: nada fica sob o painel.
+	var show_panel := is_instance_valid(map.selected)
+	var zoom := 0.79 if show_panel else 1.0
+	world.scale = Vector2(zoom, zoom)
+	world.position = Vector2((1248.0 - 1248.0 * zoom) * 0.5, 0.0)
 	if chosen >= 0:
 		ghost.position = world.get_local_mouse_position()
-		ghost.visible = Rect2(0, 0, 1190, 650).has_point(ghost.position)
+		ghost.visible = Rect2(0, 0, 1248, 810).has_point(ghost.position)
 		map.ghost_position = ghost.position
 		map.ghost_valid = map.valid_spot(ghost.position)
 		ghost.modulate = Color(1, 1, 1, 0.6) if map.ghost_valid else Color(1, 0.4, 0.4, 0.5)
 	map.show_ghost = chosen >= 0 and ghost.visible
+	if chosen >= 0:
+		map.ghost_range = TowerData.CLASSES[chosen].range
 	map.queue_redraw()
 	if started and not ended:
 		hud.update_selection()
@@ -79,7 +90,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if not started or ended or get_tree().paused:
 			return
 		var point := world.get_local_mouse_position()
-		if not Rect2(0, 0, 1190, 650).has_point(point):
+		if not Rect2(0, 0, 1248, 810).has_point(point):
 			return
 		if chosen >= 0:
 			build(point)
@@ -111,6 +122,8 @@ func build(point: Vector2) -> void:
 func cancel_build() -> void:
 	chosen = -1
 	ghost.visible = false
+	map.show_ghost = false
+	map.queue_redraw()
 	hud.message.text = "Escolha uma torre. Espaço inicia a próxima onda."
 	refresh()
 
@@ -136,7 +149,21 @@ func sell_selected() -> void:
 
 func enemy_defeated(enemy: Slime) -> void:
 	kills += 1
-	money += 10 if enemy.kind < 3 else 18
+	money += 5 if enemy.fragment else int(TowerData.ENEMIES[enemy.kind].reward)
+	if enemy.kind == 2 and not enemy.fragment:
+		for offset in [-12.0, 12.0]:
+			var child := load("res://scenes/actors/slime.tscn").instantiate() as Slime
+			child.route = enemy.route
+			child.kind = 0
+			child.fragment = true
+			child.distance = maxf(0.0, enemy.distance + offset)
+			child.health = enemy.max_health * 0.28
+			child.max_health = child.health
+			child.speed = enemy.speed * 1.3
+			child.scale = Vector2(0.7, 0.7)
+			world.add_child(child)
+			child.defeated.connect(enemy_defeated)
+			child.escaped.connect(enemy_escaped)
 	refresh()
 
 func enemy_escaped(_enemy: Slime) -> void:
