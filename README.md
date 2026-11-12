@@ -1,43 +1,61 @@
-# Pinguins vs. Gosmas
+# Pinguins vs. Gosmas — Godot
 
-Base própria de jogo 2D para navegador, sem engine ou bibliotecas externas. O servidor Node.js entrega os módulos em localhost; a simulação e a renderização rodam no navegador usando Canvas 2D. O HTML é somente o ponto de entrada.
+Projeto nativo em **Godot 4.6**, com renderizador Compatibility e GDScript. Esta versão substitui a base web anterior, que continua disponível no histórico do Git.
 
-## Iniciar
+## Abrir e jogar
 
-Instale **Node.js 20 ou superior** uma vez. Não é necessário executar `npm install`.
+1. Instale o **Godot 4.6 Standard**, sem .NET, em https://godotengine.org/download/.
+2. Baixe o repositório como ZIP e extraia a pasta.
+3. No gerenciador do Godot, clique em **Importar** e selecione `project.godot`.
+4. Abra o projeto e pressione **F5**. Escolha a dificuldade, construa os pinguins e inicie a primeira onda.
 
-- **Windows:** dê dois cliques em `Iniciar.bat`. Ele inicia o servidor e abre o navegador. Para um atalho na área de trabalho, clique com o botão direito no arquivo e escolha Enviar para → Área de trabalho (criar atalho).
-- **macOS:** no primeiro uso, execute `chmod +x Iniciar.command` no Terminal; depois abra `Iniciar.command`.
-- **Linux ou terminal:** execute `npm start` na pasta do projeto.
-
-Endereço: **http://localhost:3000**. Mantenha o terminal aberto; Ctrl+C encerra o servidor. Para outra porta: `PORT=3001 npm start` (Linux/macOS), ou `set PORT=3001` antes de iniciar (Windows). Sem acesso externo: o servidor escuta somente em 127.0.0.1. Após instalar Node, funciona offline.
+Não usa Node, npm, localhost ou navegador. O jogo roda em janela própria. Para distribuir um `.exe` independente, instale os templates de exportação da mesma versão do Godot e configure a exportação Windows Desktop. Os templates não estão incluídos neste repositório.
 
 ## Organização
 
 ```
-tools/server.mjs             Servidor local e abertura do navegador
-src/main.js                  Inicialização e ligação dos módulos
-src/engine/loop.js            Passo fixo de simulação a 60 Hz
-src/engine/renderer.js        Canvas e resolução da tela
-src/engine/input.js           Ponteiro e teclado
-src/engine/sprites.js         Atlas em cache e reprodução dos quadros
-src/engine/audio.js           Sons sintetizados
-src/game/data.js             Definições das classes
-src/game/art/                Desenho procedural de mapa e personagens
-src/game/entities/           Pinguins, gosmas e projéteis
-src/game/systems/            Combate e posicionamento no mapa
-src/ui/                     Interface, estilos e visualização do mundo
-tests/                      Testes de combate, posicionamento e servidor
+project.godot                 Configuração do projeto
+assets/
+  icon.svg                    Ícone original
+  sprites/penguins.png        Atlas original: seis classes, repouso e ataque
+scenes/
+  main.tscn                   Cena principal, mundo e HUD
+  actors/                     Cenas reutilizáveis de pinguim e gosma
+  ui/                         Cena do HUD
+scripts/
+  core/                       Partida, mapa, dados e cache de SpriteFrames
+  actors/                     Pinguins, gosmas, projéteis e impactos
+  systems/                    Ondas e geração de inimigos
+  ui/                         Construção da interface e menus
+ tests/                       Testes executáveis pelo Godot headless
+ docs/                        Notas técnicas
 ```
 
-## Estado atual
+## Implementado nesta base
 
-Laboratório funcional de combate com seis classes: Atirador, Ninja, Canhoneiro, Congelador, Engenheiro e Mago. Os personagens são desenhados por código e renderizados em atlas de 24 quadros de repouso e 24 de ataque por classe (288 quadros em cache). Cada ataque tem preparação, soltura e recuperação; o projétil é criado no instante da soltura. O canhão recua e causa dano em área; o gelo desacelera; o engenheiro coloca armadilhas consumíveis na pista. As demais classes têm projéteis e animações próprios; perfuração e melhorias ainda serão implementadas.
+- Mapa limpo com caminho curvo de gelo e interface fora da área de jogo.
+- Seis classes com `AnimatedSprite2D`: 24 quadros de repouso e 24 de ataque por classe. O projétil é criado no quadro 9, após a preparação.
+- Compra e posicionamento válido, seleção, alcance, venda com reembolso de 70%.
+- Três caminhos de melhoria funcional por torre: dano, cadência e alcance. Apenas um pode atingir nível 3; com um no máximo, os demais ficam limitados ao nível 1. Para liberar o nível 3, os outros caminhos precisam estar no nível 0 ou 1.
+- Canhão com área de impacto; gelo com desaceleração; engenheiro com armadilhas consumíveis persistentes na pista; magia e canhão ignoram a redução de dano da armadura.
+- Quatro tipos de gosma: azul, verde rápida, roxa e cinza blindada. Nesta etapa a roxa tem variação visual, ainda sem divisão.
+- Gerador de 60 ondas, três dificuldades, chefões a cada dez ondas, vitória e continuação infinita.
+- Recompensa de vitória em Moedas de Gelo, salva em `user://progress.cfg` e mantida no infinito.
+- Pausa, velocidade 2×, reinício, vitória e derrota.
 
-As torres iniciais atacam automaticamente. Escolha uma classe na lateral e clique na neve para construir; o dinheiro é consumido. Clique numa torre para ver o alcance. Esc cancela construção. Os controles pausam, aceleram, reiniciam e ligam o som.
+## Controles
 
-Esta é a primeira base da engine, ainda não o jogo completo: as gosmas surgem continuamente para testar o combate. Não há campanha de 60 ondas, vitória, upgrades, loja permanente ou salvamento nesta versão. O contador de vida é informativo neste laboratório, sem tela de derrota.
+Mouse: comprar, posicionar e selecionar. **Espaço** inicia a próxima onda. **Esc** cancela construção ou abre pausa.
 
-## Verificação
+## Escopo
 
-Execute `npm test`. Os testes verificam dano de todas as classes, sincronização inicial do ataque, bloqueio de construção, estabilidade de simulação por três minutos e servidor local.
+É a primeira base jogável em Godot. A arte foi importada do desenho procedural original e ainda será refinada; não representa o acabamento final das referências. As 60 ondas são geradas por fórmula e ainda precisam de balanceamento de campanha. Ainda não inclui áudio, agentes especiais, coleção, novas classes, opções de configuração ou efeitos exclusivos de cada ramo de upgrade. A exportação executável final não faz parte desta etapa.
+
+## Testes
+
+Na pasta do projeto, com Godot no PATH:
+
+```
+godot --headless --editor --path . --import
+godot --headless --path . --script tests/smoke_test.gd
+```

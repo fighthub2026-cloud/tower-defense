@@ -1,4 +1,4 @@
-node_modules/
+.godot/
+builds/
+*.tmp
 .DS_Store
-*.log
-coverage/
