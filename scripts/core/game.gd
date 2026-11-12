@@ -59,11 +59,8 @@ func _draw() -> void:
 	draw_texture_rect(map.snow_art, Rect2(0, 0, 1248, 810), true)
 
 func _process(_delta: float) -> void:
-	# A área da partida encolhe uniformemente ao abrir melhorias: nada fica sob o painel.
-	var show_panel := is_instance_valid(map.selected)
-	var zoom := 0.79 if show_panel else 1.0
-	world.scale = Vector2(zoom, zoom)
-	world.position = Vector2((1248.0 - 1248.0 * zoom) * 0.5, 0.0)
+	world.scale = Vector2.ONE
+	world.position = Vector2.ZERO
 	if chosen >= 0:
 		ghost.position = world.get_local_mouse_position()
 		ghost.visible = Rect2(0, 0, 1248, 810).has_point(ghost.position)

@@ -1,0 +1,27 @@
+{
+  "count": 19,
+  "font": "Lilita One / SIL Open Font License",
+  "source": "Componentes PNG individuais gerados e aprovados no chat",
+  "preparation": "tools/prepare_ui.gd",
+  "components": [
+    "back.png",
+    "button_cancel.png",
+    "button_green.png",
+    "button_sell.png",
+    "card_disabled.png",
+    "card_hover.png",
+    "card_normal.png",
+    "card_selected.png",
+    "close.png",
+    "coins.png",
+    "gear.png",
+    "header.png",
+    "heart.png",
+    "play_symbol.png",
+    "sidebar_wood.png",
+    "upgrade_cadence.png",
+    "upgrade_card.png",
+    "upgrade_power.png",
+    "upgrade_range.png"
+  ]
+}

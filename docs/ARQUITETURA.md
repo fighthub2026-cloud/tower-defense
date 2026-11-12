@@ -18,10 +18,16 @@ O cenário usa profundidade 0, a asa/arma usa 1, a cabeça usa 2 e os projéteis
 
 ## HUD, seleção e efeitos de controle
 
-Os recortes de interface são imagens procedurais feitas em Canvas 2D e aplicadas como `StyleBoxTexture` e `AtlasTexture` no Godot. O HUD não usa uma barra superior: os indicadores são controles independentes sobre o mapa. A loja só contém as seis torres implementadas.
+Os componentes de interface são PNGs individuais aprovados, aplicados como `StyleBoxTexture` e `Texture2D` pelo cache de `HudArt`. O HUD não usa uma barra superior: os indicadores são controles independentes sobre o mapa. A loja só contém as seis torres implementadas.
 
-O botão principal da loja tem três estados: `next`, `active` e `cancel`. A construção tem prioridade de interação sobre a onda ativa; cancelar não compra, não inicia uma onda e não altera a simulação. O painel de melhorias só abre para torres colocadas. O mundo muda de escala uniformemente nesse estado, mantendo as torres fora da área do painel. A posição do mouse é convertida pelas transformações do mundo.
+O botão principal da loja tem três estados: `next`, `active` e `cancel`. A construção tem prioridade de interação sobre a onda ativa; cancelar não compra, não inicia uma onda e não altera a simulação. Ao selecionar uma torre colocada, `TowerUpgrades` substitui `TowerShop` na mesma lateral. O mundo mantém escala e posição fixas. A posição do mouse é convertida pelas transformações do mundo.
 
 O congelador segue uma rota de controle exclusiva: seu projétil chama `stick_snow` e retorna sem chamar `hit`. Isso garante zero dano mesmo com metadados incorretos de projétil. A melhoria de impacto é substituída por duração da lentidão na interface e nas regras.
 
 O atlas de gosmas tem oito linhas de tipos e doze quadros por tipo. Os dados de cada classe ficam em `TowerData.ENEMIES`; as ondas liberam os tipos progressivamente. Divisão em fragmentos, armadura, regeneração e resistência ao gelo têm regras próprias e testes de integração.
+
+## Recursos da interface
+
+`assets/ui/approved/` contém as 19 peças individuais. Os estados de cartão usam suas próprias texturas; controles com preço e texto são montados sobre as bases. A fonte é local e licenciada. O renderizador reaproveita as mesmas texturas em vez de carregar cópias por torre.
+
+A lateral tem estados `shop` e `upgrades`. Vender remove a torre e retorna à loja. Fechar, voltar e Esc apenas removem a seleção. Os controles de onda/velocidade continuam no rodapé da lateral em ambos os estados. Não há painel inferior nem alteração de câmera durante a seleção.

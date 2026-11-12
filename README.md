@@ -75,12 +75,26 @@ Com uma tela gráfica disponível, execute `godot --path . --script tests/render
 
 ## Interface e arte procedural
 
-O HUD segue a proposta aprovada: vida/dinheiro flutuantes sobre a neve, onda e engrenagem no canto e loja estreita de madeira com duas colunas. Usa os **seis pinguins existentes**, sem substituir os personagens pelas ilustrações do mockup. O painel de melhorias aparece apenas ao selecionar uma torre colocada; o tabuleiro se ajusta para manter a área de jogo visível.
+O HUD segue a proposta aprovada: vida/dinheiro flutuantes sobre a neve, onda e engrenagem no canto e loja estreita de madeira com duas colunas. Usa os **seis pinguins existentes**, sem substituir os personagens pelas ilustrações do mockup. Ao selecionar uma torre colocada, a própria lateral da loja vira o painel de melhorias, estatísticas e venda. O mapa permanece fixo. X, Voltar à loja, Esc ou clicar fora retornam à loja.
 
 Ao escolher um pinguim na loja, o botão de iniciar/acompanhar a onda vira um **X vermelho para cancelar**. Ao cancelar ou construir, o botão recupera o estado anterior da onda. A prévia de construção mostra o alcance e a validade da posição. **Esc** também cancela.
 
-`tools/art/index.html` e `tools/art/generate.js` são as fontes de criação em **Canvas 2D** dos ícones, cartões, botões, madeira, neve, árvores, cristais e do atlas de gosmas. Abra a ferramenta no navegador para baixar cada PNG. O jogo utiliza apenas os PNG locais; essa ferramenta não é necessária para jogar.
+`tools/art/index.html` e `tools/art/generate.js` são as fontes de criação em **Canvas 2D** da neve, árvores, cristais e do atlas de gosmas. Os elementos do HUD são os PNGs individuais aprovados em `assets/ui/approved/`. Abra a ferramenta no navegador para baixar cada PNG. O jogo utiliza apenas os PNG locais; essa ferramenta não é necessária para jogar.
 
 O congelador não altera a vida nem produz flashes de dano. O primeiro caminho aumenta a duração da lentidão. As marcas de neve são pequenas placas nas bordas da gosma e derretem ao expirar o efeito. A flecha carregada e o projétil em voo têm o mesmo tamanho, aumentado para ficar legível.
 
 Novos testes: `godot --headless --path . --script tests/mechanics_ui_test.gd`. A cena `scenes/enemy_gallery.tscn` (F6) apresenta os oito tipos de gosma. `tests/capture_preview.gd` permite capturar o HUD real com `GODOT_CAPTURE_DIR` apontando para uma pasta existente, usando renderização gráfica.
+
+## Componentes individuais aprovados
+
+O HUD utiliza 19 imagens geradas individualmente: quatro estados do cartão (normal, selecionado, realce e indisponível), botão verde, cancelar, vender, madeira da lateral, cartão de melhoria, coração, moedas, engrenagem, cabeçalho, voltar, fechar, iniciar e três ícones de melhoria.
+
+Os PNGs em `assets/ui/approved/` estão dimensionados para uso na interface. `tools/prepare_ui.gd` faz a preparação dos arquivos originais: tamanho, margens transparentes e remoção do branco conectado ao exterior nas duas peças verdes. As imagens mantêm a face preenchida e as letras e brilhos internos. O jogo já inclui todos os arquivos preparados.
+
+A fonte **Lilita One** está incluída em `assets/fonts/` com licença SIL Open Font License (`OFL.txt`). Textos, valores, preços e estados continuam dinâmicos.
+
+O teste `godot --headless --path . --script tests/sidebar_test.gd` verifica a troca loja/melhorias, mapa fixo, fechar, voltar, Esc, compras, venda e transparência. A interface não possui painel inferior.
+
+### Transparência no renderizador
+
+Os cantos dos PNGs do HUD são transparentes e os fundos internos permanecem preenchidos. O teste gráfico `godot --path . --script tests/ui_transparency_test.gd` compara os cantos dos quatro estados de cartão com a madeira por trás deles. `tests/sidebar_test.gd` verifica também a ausência de furos na face do botão verde.

@@ -50,6 +50,8 @@ func _physics_process(delta: float) -> void:
 	queue_redraw()
 
 func apply_damage(enemy: Slime) -> void:
+	if is_instance_valid(source) and enemy.alive:
+		source.hits += 1
 	if tower_type == 3:
 		enemy.stick_snow(slow_duration)
 		return

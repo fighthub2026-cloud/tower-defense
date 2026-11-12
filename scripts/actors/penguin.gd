@@ -7,6 +7,7 @@ var target: Slime
 var attacking := false
 var released := false
 var kills := 0
+var hits := 0
 var invested := 0
 var upgrades: Array[int] = [0, 0, 0]
 var visual: PenguinVisual
