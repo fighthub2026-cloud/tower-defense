@@ -62,7 +62,7 @@ Na pasta do projeto, com Godot no PATH:
 
 ```
 godot --headless --editor --path . --import
-godot --headless --path . --scripttests/smoke_test.gd
+godot --headless --path . --script tests/smoke_test.gd
 ```
 
 ## Conferir as animações
@@ -94,6 +94,10 @@ Os PNGs em `assets/ui/approved/` estão dimensionados para uso na interface. `to
 A fonte **Lilita One** está incluída em `assets/fonts/` com licença SIL Open Font License (`OFL.txt`). Textos, valores, preços e estados continuam dinâmicos.
 
 O teste `godot --headless --path . --script tests/sidebar_test.gd` verifica a troca loja/melhorias, mapa fixo, fechar, voltar, Esc, compras, venda e transparência. A interface não possui painel inferior.
+
+As duas telas da lateral compartilham margens e controles inferiores alinhados. Os preços ficam centralizados nas etiquetas verdes, as estatísticas têm fundo próprio e os cartões de melhoria mantêm espaçamento uniforme. O botão inferior inicia a onda, mostra pausa durante a ação e volta a mostrar iniciar para continuar a partida pausada. A engrenagem abre o menu de pausa. O ícone de iniciar tem as margens transparentes normalizadas antes da centralização; a pausa usa duas barras simétricas. A janela preserva a proporção do jogo ao redimensionar.
+
+Com uma tela gráfica, `godot --path . --script tests/ui_polish_test.gd` confere o centro dos pixels dos ícones e os dois modos da lateral em 1280×720 e 1600×900, além do fluxo iniciar/pausar/continuar. `GODOT_CAPTURE_DIR` permite salvar as capturas em uma pasta existente.
 
 ### Transparência no renderizador
 

@@ -3,6 +3,7 @@ extends CanvasLayer
 var game: Node2D
 var ready_ui := false
 var result_open := false
+var transport_paused := false
 var status: Label
 var lives_label: Label
 var money_label: Label
@@ -63,7 +64,7 @@ func setup(controller: Node2D) -> void:
 	pause_button = button(top, Vector2(1187, 7), Vector2(52, 52), "", toggle_pause)
 	pause_button.icon = HudArt.texture("gear")
 	pause_button.expand_icon = true
-	pause_button.add_theme_constant_override("icon_max_width", 52)
+	HudArt.center_button_icon(pause_button, 52)
 	pause_button.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
 	pause_button.add_theme_stylebox_override("hover", StyleBoxEmpty.new())
 	pause_button.add_theme_stylebox_override("pressed", StyleBoxEmpty.new())
@@ -74,90 +75,99 @@ func setup(controller: Node2D) -> void:
 	shop_layer.size = Vector2(192, 708)
 	shop_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	sidebar.add_child(shop_layer)
-	picture(shop_layer, Vector2(9, 10), Vector2(175, 48), HudArt.texture("header"))
+	picture(shop_layer, Vector2(12, 12), Vector2(168, 46), HudArt.texture("header"))
 	for slot in range(6):
 		var i: int = SHOP_ORDER[slot]
 		var type := i
 		var column := slot % 2
 		var row := slot / 2
-		var b := button(shop_layer, Vector2(10 + column * 89, 78 + row * 112), Vector2(83, 104), "", func(): game.choose(type))
+		var b := button(shop_layer, Vector2(12 + column * 88, 80 + row * 116), Vector2(80, 108), "", func(): game.choose(type))
 		HudArt.button_skin(b, "card")
 		b.toggle_mode = true
 		b.tooltip_text = TowerData.CLASSES[i].name + "\n" + ROLES[i]
 		var portrait := PenguinVisual.new()
 		portrait.tower_type = i
-		portrait.position = Vector2(38, 45)
+		portrait.position = Vector2(36, 46)
 		b.add_child(portrait)
 		portrait.scale = Vector2(0.215, 0.215)
 		portraits.append(portrait)
-		var price := label(b, Vector2(0, 75), Vector2(83, 27), "$%d" % TowerData.CLASSES[i].cost, 19)
+		var price := label(b, Vector2(8, 76), Vector2(64, 26), "$%d" % TowerData.CLASSES[i].cost, 19)
 		price.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		outline(price, 4)
 		b.set_meta("price_label", price)
 		shop.append(b)
 	# Detalhes contextuais, sem quadros extras ocupando o cenário.
-	context_label = label(shop_layer, Vector2(14, 445), Vector2(169, 95), "", 13)
+	context_label = label(shop_layer, Vector2(12, 446), Vector2(168, 95), "", 13)
 	context_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	coins = label(sidebar, Vector2(14, 657), Vector2(169, 26), "", 11)
 	coins.visible = false
-	speed_button = button(sidebar, Vector2(10, 716), Vector2(83, 81), "1×", toggle_speed)
+	speed_button = button(sidebar, Vector2(12, 718), Vector2(80, 80), "1×", toggle_speed)
 	HudArt.button_skin(speed_button, "green")
 	speed_button.add_theme_font_size_override("font_size", 29)
 	speed_button.add_theme_constant_override("outline_size", 4)
-	wave_button = button(sidebar, Vector2(100, 716), Vector2(83, 81), "", main_action)
+	speed_button.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	speed_button.tooltip_text = "Velocidade da partida: 1×"
+	wave_button = button(sidebar, Vector2(100, 718), Vector2(80, 80), "", main_action)
 	wave_button.icon = HudArt.icon(6)
 	wave_button.expand_icon = true
-	wave_button.add_theme_constant_override("icon_max_width", 47)
+	HudArt.center_button_icon(wave_button, 36)
 	upgrade_layer = Control.new()
 	upgrade_layer.name = "TowerUpgrades"
 	upgrade_layer.size = Vector2(192, 708)
 	upgrade_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	sidebar.add_child(upgrade_layer)
 	var selected_header := Panel.new()
-	selected_header.position = Vector2(45, 10)
-	selected_header.size = Vector2(139, 48)
+	selected_header.position = Vector2(46, 12)
+	selected_header.size = Vector2(134, 46)
 	selected_header.add_theme_stylebox_override("panel", HudArt.style("green"))
 	upgrade_layer.add_child(selected_header)
-	selected_title = label(selected_header, Vector2(3, 2), Vector2(133, 43), "Pinguim", 17)
+	selected_title = label(selected_header, Vector2(4, 3), Vector2(126, 40), "Pinguim", 17)
 	selected_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	selected_title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	outline(selected_title, 3)
-	close_button = button(upgrade_layer, Vector2(6, 14), Vector2(35, 36), "", close_selection)
+	close_button = button(upgrade_layer, Vector2(12, 20), Vector2(28, 28), "", close_selection)
 	close_button.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
 	close_button.add_theme_stylebox_override("hover", StyleBoxEmpty.new())
 	close_button.add_theme_stylebox_override("pressed", StyleBoxEmpty.new())
 	close_button.icon = HudArt.texture("close")
 	close_button.expand_icon = true
-	close_button.add_theme_constant_override("icon_max_width", 35)
+	HudArt.center_button_icon(close_button, 28)
 	close_button.tooltip_text = "Fechar e voltar à loja"
 	var portrait_frame := Panel.new()
-	portrait_frame.position = Vector2(10, 77)
-	portrait_frame.size = Vector2(174, 124)
+	portrait_frame.position = Vector2(12, 74)
+	portrait_frame.size = Vector2(168, 114)
 	portrait_frame.add_theme_stylebox_override("panel", HudArt.style("card"))
 	upgrade_layer.add_child(portrait_frame)
 	selection_preview = PenguinVisual.new()
-	selection_preview.position = Vector2(86, 151)
+	selection_preview.position = Vector2(78, 141)
 	upgrade_layer.add_child(selection_preview)
-	selection_preview.scale = Vector2(0.37, 0.37)
-	selection = label(upgrade_layer, Vector2(13, 211), Vector2(171, 101), "", 14)
+	selection_preview.scale = Vector2(0.34, 0.34)
+	var stats_frame := Panel.new()
+	stats_frame.position = Vector2(12, 196)
+	stats_frame.size = Vector2(168, 92)
+	stats_frame.add_theme_stylebox_override("panel", HudArt.style("upgrade"))
+	upgrade_layer.add_child(stats_frame)
+	selection = label(upgrade_layer, Vector2(24, 203), Vector2(144, 78), "", 14)
+	selection.add_theme_constant_override("line_spacing", 2)
 	for path in range(3):
 		var index := path
-		var b := button(upgrade_layer, Vector2(10, 321 + path * 96), Vector2(174, 89), "", func(): game.buy_upgrade(index))
+		var b := button(upgrade_layer, Vector2(12, 304 + path * 94), Vector2(168, 86), "", func(): game.buy_upgrade(index))
 		HudArt.button_skin(b, "upgrade")
 		b.add_theme_stylebox_override("disabled", HudArt.style("upgrade"))
-		var icon := picture(b, Vector2(8, 6), Vector2(31, 31), HudArt.texture(["upgrade_power", "upgrade_cadence", "upgrade_range"][path]))
+		var icon := picture(b, Vector2(10, 9), Vector2(28, 28), HudArt.texture(["upgrade_power", "upgrade_cadence", "upgrade_range"][path]))
 		upgrade_icons.append(icon)
-		var name_label := label(b, Vector2(42, 7), Vector2(124, 23), "", 15)
+		var name_label := label(b, Vector2(45, 8), Vector2(113, 23), "", 15)
 		outline(name_label, 3)
 		upgrade_titles.append(name_label)
-		upgrade_effects.append(label(b, Vector2(10, 30), Vector2(155, 20), "", 11))
+		upgrade_effects.append(label(b, Vector2(12, 36), Vector2(144, 18), "", 12))
 		var price_frame := Panel.new()
-		price_frame.position = Vector2(77, 49)
-		price_frame.size = Vector2(88, 35)
+		price_frame.position = Vector2(80, 54)
+		price_frame.size = Vector2(80, 30)
 		price_frame.add_theme_stylebox_override("panel", HudArt.style("green"))
 		price_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		b.add_child(price_frame)
-		var price_label := label(b, Vector2(78, 51), Vector2(86, 30), "", 19)
+		var price_label := label(price_frame, Vector2.ZERO, Vector2(80, 30), "", 18)
+		price_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		price_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		outline(price_label, 3)
 		upgrade_prices.append(price_label)
@@ -170,18 +180,18 @@ func setup(controller: Node2D) -> void:
 			pip_style.set_border_width_all(1)
 			pip_style.border_color = Color("6f552d")
 			pip.add_theme_stylebox_override("panel", pip_style)
-			pip.position = Vector2(12 + level * 16, 66)
+			pip.position = Vector2(12 + level * 16, 63)
 			pip.size = Vector2(12, 12)
 			pip.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			b.add_child(pip)
 			pips.append(pip)
 		upgrade_pips.append(pips)
 		upgrades.append(b)
-	sell_button = button(upgrade_layer, Vector2(10, 622), Vector2(174, 45), "VENDER", game.sell_selected)
+	sell_button = button(upgrade_layer, Vector2(12, 599), Vector2(168, 47), "VENDER", game.sell_selected)
 	HudArt.button_skin(sell_button, "red")
 	sell_button.add_theme_font_size_override("font_size", 17)
 	sell_button.tooltip_text = "Remove o pinguim e devolve 70% do investimento"
-	back_button = button(upgrade_layer, Vector2(10, 676), Vector2(174, 32), "Voltar à loja", close_selection)
+	back_button = button(upgrade_layer, Vector2(12, 656), Vector2(168, 36), "Voltar à loja", close_selection)
 	HudArt.button_skin(back_button, "back")
 	back_button.add_theme_font_size_override("font_size", 13)
 	message = label(get_layer_holder(), Vector2(20, 617), Vector2(1210, 28), "Escolha um pinguim na loja para construir.", 13)
@@ -234,6 +244,7 @@ func label(parent: Node, pos: Vector2, dimensions: Vector2, content: String, fon
 	result.size = dimensions
 	result.text = content
 	result.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	result.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	result.add_theme_font_size_override("font_size", font_size)
 	result.add_theme_font_override("font", ui_theme.default_font)
 	parent.add_child(result)
@@ -252,7 +263,10 @@ func main_action() -> void:
 	if game.chosen >= 0:
 		game.cancel_build()
 	elif game.started and not game.ended:
-		game.waves.start_wave()
+		if game.waves.active:
+			toggle_transport()
+		else:
+			game.waves.start_wave()
 
 func clear_dialog() -> void:
 	for child in dialog_box.get_children():
@@ -292,11 +306,22 @@ func hide_dialog() -> void:
 func toggle_speed() -> void:
 	Engine.time_scale = 2.0 if Engine.time_scale == 1.0 else 1.0
 	speed_button.text = "2×" if Engine.time_scale == 2.0 else "1×"
+	speed_button.tooltip_text = "Velocidade da partida: " + speed_button.text
+
+func toggle_transport() -> void:
+	if not game.started or game.ended or result_open:
+		return
+	get_tree().paused = not get_tree().paused
+	transport_paused = get_tree().paused
+	refresh()
 
 func toggle_pause() -> void:
 	if not game.started or game.ended or result_open:
 		return
-	get_tree().paused = not get_tree().paused
+	if transport_paused:
+		transport_paused = false
+	else:
+		get_tree().paused = not get_tree().paused
 	pause_button.icon = HudArt.texture("gear")
 	if get_tree().paused:
 		clear_dialog()
@@ -306,6 +331,7 @@ func toggle_pause() -> void:
 		dialog_button("Reiniciar partida", game.restart)
 	else:
 		hide_dialog()
+	refresh()
 
 func show_result(victory: bool) -> void:
 	result_open = true
@@ -333,11 +359,11 @@ func refresh() -> void:
 		wave_button.icon = null
 		HudArt.button_skin(wave_button, "cancel")
 	else:
-		wave_button.disabled = game.waves.active or not game.started or game.ended
+		wave_button.disabled = not game.started or game.ended
 		wave_button.text = ""
-		wave_button.tooltip_text = "Onda em andamento" if game.waves.active else "Próxima onda"
+		wave_button.tooltip_text = ("Continuar onda" if get_tree().paused else "Pausar onda") if game.waves.active else "Próxima onda"
 		wave_button.set_meta("action", &"active" if game.waves.active else &"next")
-		wave_button.icon = HudArt.icon(6 if game.waves.active else 4)
+		wave_button.icon = HudArt.icon(5 if game.waves.active and not get_tree().paused else 4)
 		HudArt.button_skin(wave_button, "green")
 	for slot in range(shop.size()):
 		var i: int = SHOP_ORDER[slot]
@@ -368,9 +394,9 @@ func update_selection() -> void:
 		selection_preview.queue_free()
 		selection_preview = PenguinVisual.new()
 		selection_preview.tower_type = type
-		selection_preview.position = Vector2(86, 151)
+		selection_preview.position = Vector2(78, 141)
 		parent.add_child(selection_preview)
-		selection_preview.scale = Vector2(0.37, 0.37)
+		selection_preview.scale = Vector2(0.34, 0.34)
 	var primary := "Lentidão: %.2f s" % tower.slow_duration() if type == 3 else "Dano: %.0f" % tower.attack_damage()
 	selection.text = "Acertos: %d\n%s\nAlcance: %.0f\nCadência: %.2f s" % [tower.hits, primary, tower.attack_range(), TowerData.CLASSES[type].cooldown / (1.0 + tower.upgrades[1] * 0.3)]
 	selection.text = selection.text.replace(".", ",")

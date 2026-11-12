@@ -31,7 +31,46 @@ static func style(name: String) -> StyleBoxTexture:
 	styles[name] = result
 	return result
 
+static func centered_icon(name: String) -> Texture2D:
+	var key := "centered_" + name
+	if textures.has(key):
+		return textures[key]
+	var image := texture(name).get_image()
+	var left := image.get_width()
+	var top := image.get_height()
+	var right := -1
+	var bottom := -1
+	# O brilho transparente do arquivo não deve deslocar o centro do símbolo.
+	for y in range(image.get_height()):
+		for x in range(image.get_width()):
+			if image.get_pixel(x, y).a > 0.4:
+				left = mini(left, x)
+				top = mini(top, y)
+				right = maxi(right, x)
+				bottom = maxi(bottom, y)
+	if right >= left and bottom >= top:
+		image = image.get_region(Rect2i(left, top, right-left+1, bottom-top+1))
+	textures[key] = ImageTexture.create_from_image(image)
+	return textures[key]
+
+static func center_button_icon(button: Button, width: int = 38) -> void:
+	button.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	button.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+	button.expand_icon = true
+	button.add_theme_constant_override("icon_max_width", width)
+
 static func icon(index: int) -> Texture2D:
+	if index == 4:
+		return centered_icon("play_symbol")
+	if index == 5:
+		if not textures.has("pause_symbol"):
+			var image := Image.create(44, 44, false, Image.FORMAT_RGBA8)
+			for x in [9, 26]:
+				image.fill_rect(Rect2i(x, 8, 9, 28), Color("285317"))
+				image.fill_rect(Rect2i(x+2, 10, 5, 24), Color("fffdf2"))
+			textures["pause_symbol"] = ImageTexture.create_from_image(image)
+		return textures["pause_symbol"]
 	var names := {0: "heart", 1: "coins", 3: "gear", 4: "play_symbol", 7: "close"}
 	if names.has(index):
 		return texture(names[index])

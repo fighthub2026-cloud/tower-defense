@@ -24,7 +24,7 @@ func run() -> void:
 	game.waves.remaining = 100
 	game.waves.timer = 1000.0
 	game.refresh()
-	check(game.hud.wave_button.get_meta("action") == &"active" and game.hud.wave_button.disabled, "Onda ativa desabilita iniciar")
+	check(game.hud.wave_button.get_meta("action") == &"active" and not game.hud.wave_button.disabled, "Onda ativa oferece pausa")
 	game.choose(3)
 	check(game.hud.wave_button.get_meta("action") == &"cancel" and not game.hud.wave_button.disabled, "Cancelar funciona durante onda ativa")
 	game.hud.wave_button.pressed.emit()
