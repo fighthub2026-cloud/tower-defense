@@ -68,3 +68,7 @@ godot --headless --path . --scripttests/smoke_test.gd
 ## Conferir as animações
 
 No editor, abra `scenes/animation_gallery.tscn` e pressione **F6** para ver os seis pinguins atacando alvos. **F5** continua abrindo a partida normal. O teste de animação verifica origem, direção, soltura única, objeto visível/invisível, recarga, camadas das asas e neve aderente.
+
+### Verificação visual de camadas
+
+Com uma tela gráfica disponível, execute `godot --path . --script tests/render_layers_test.gd` **sem `--headless`**. O teste renderiza os seis pinguins em direções diferentes sobre o mapa e compara os pixels com e sem asas, detectando armas escondidas atrás da neve. `GODOT_TEST_SCREENSHOT` pode definir um caminho para salvar a captura.

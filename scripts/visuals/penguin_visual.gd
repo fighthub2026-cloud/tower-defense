@@ -26,14 +26,15 @@ func build() -> void:
 	body_pivot.name = "Body"
 	add_child(body_pivot)
 	body = Sprite2D.new()
+	body.z_index = 2
 	body.texture = SpriteLibrary.part(tower_type, 0)
 	body.centered = false
 	body.offset = SpriteLibrary.REGIONS[tower_type][0].position - SpriteLibrary.BODY_PIVOTS[tower_type]
 	body_pivot.add_child(body)
 	arm = Node2D.new()
 	arm.name = "Arm"
-	# Asa/arma atrás da cabeça: o chapéu oculta a raiz da asa.
-	arm.z_index = -1
+	# Acima do mapa (0), abaixo da cabeça (2); nunca usar profundidade negativa.
+	arm.z_index = 1
 	arm.position = Vector2(115, 12)
 	body_pivot.add_child(arm)
 	var weapon := Sprite2D.new()

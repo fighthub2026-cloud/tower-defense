@@ -45,6 +45,7 @@ func run() -> void:
 		)
 		var shoulder := tower.visual.arm.position
 		tower.visual.player.advance(0.29)
+		check(tower.visual.arm.z_index > game.map.z_index, "Asa e arma acima do cenário, classe %d" % type)
 		check(tower.visual.arm.z_index < tower.visual.body.z_index, "Asa desenhada atrás da cabeça, classe %d" % type)
 		check(tower.visual.arm.position.is_equal_approx(shoulder), "Ombro fixo na preparação, classe %d" % type)
 		check(tower.visual.held.visible == (type != 2), "Objeto carregado antes da soltura, classe %d" % type)

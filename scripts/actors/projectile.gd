@@ -12,6 +12,7 @@ var heading := Vector2.UP
 var art: Sprite2D
 
 func _ready() -> void:
+	z_index = 3
 	art = Sprite2D.new()
 	art.texture = SpriteLibrary.part(tower_type, 2)
 	art.scale = SpriteLibrary.projectile_scale(tower_type)

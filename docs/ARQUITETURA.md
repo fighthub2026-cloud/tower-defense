@@ -11,3 +11,7 @@ O projétil de neve adiciona marcas à própria gosma; marcas e lentidão expira
 A simulação usa `_physics_process`; efeitos visuais usam `_process`. O Godot cuida do ciclo, das transformações e do desenho. O HUD fica em `CanvasLayer`, tem processamento durante pausa e ocupa áreas próprias fora do mapa. Referências a inimigos e torres são validadas antes do uso.
 
 Sem dependências externas em tempo de execução. O projeto utiliza Godot Standard e GDScript; as texturas são locais. A versão web anterior está preservada no histórico do repositório.
+
+## Ordem de desenho
+
+O cenário usa profundidade 0, a asa/arma usa 1, a cabeça usa 2 e os projéteis usam 3. A asa não pode usar profundidade negativa: isso a coloca atrás de todo o mapa, não apenas da cabeça. O teste `render_layers_test.gd` verifica a presença real de pixels das asas/armas no renderizador, incluindo personagens girados.
